@@ -2,12 +2,15 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@email-wallet/interfaces/Types.sol";
+import "@email-wallet/src/interfaces/Types.sol";
 import {ExtensionBase} from "./helpers/ExtensionBase.sol";
 import {StringUtils} from "./helpers/StringUtils.sol";
+import {EmailWalletHelper} from "./helpers/EmailWalletHelper.sol";
+import "forge-std/console.sol";
 
 contract MemoExtension is ExtensionBase {
     using StringUtils for *;
+    using EmailWalletHelper for *;
 
     struct Memo {
         bytes32 memoId;
@@ -127,6 +130,15 @@ contract MemoExtension is ExtensionBase {
         }
     }
 
+    function defineExtensionName()
+        internal
+        pure
+        override
+        returns (string memory)
+    {
+        return "Memo-v1.0.0";
+    }
+
     function defineQueryTemplates()
         internal
         pure
@@ -168,6 +180,7 @@ contract MemoExtension is ExtensionBase {
                     ", received timestamp: ",
                     memo.receivedTimestamp.toString(),
                     ", contents: ",
+                    memo.contents,
                     memo.isReceived ? ", received." : ", not received."
                 );
                 if (memo.recipient != address(0)) {
@@ -184,7 +197,7 @@ contract MemoExtension is ExtensionBase {
                         ", sent token: ",
                         memo.tokenAmount.uintToDecimalString(decimals),
                         " ",
-                        getTokenNameOfAddress(memo.tokenAddr)
+                        core.getTokenNameOfAddress(memo.tokenAddr)
                     );
                 }
                 return reply;
@@ -247,6 +260,10 @@ contract MemoExtension is ExtensionBase {
         }
     }
 
+    function getMemoOfId(bytes32 memoId) public view returns (Memo memory) {
+        return memoOfId[memoId];
+    }
+
     function executeTemplateZero(
         address wallet,
         bytes32 emailNullifier,
@@ -289,7 +306,7 @@ contract MemoExtension is ExtensionBase {
                 0,
                 false
             );
-            registerUnclaimedStateAsExtension(stateBytes);
+            core.registerUnclaimedStateAsExtension(stateBytes);
             memoOfId[memo.memoId] = memo;
             idsOfWriter[memo.writer].push(memo.memoId);
             idsOfContents[memo.contents].push(memo.memoId);
@@ -326,7 +343,7 @@ contract MemoExtension is ExtensionBase {
             (uint256, string)
         );
         require(tokenAmount > 0, "tokenAmount must be positive");
-        address tokenAddr = getTokenAddressOfName(tokenName);
+        address tokenAddr = core.getTokenAddressOfName(tokenName);
         require(tokenAddr != address(0), "invalid token name");
         if (hasEmailRecipient) {
             State memory state = State(emailNullifier);
@@ -342,12 +359,12 @@ contract MemoExtension is ExtensionBase {
                 tokenAmount,
                 false
             );
-            registerUnclaimedStateAsExtension(stateBytes);
+            core.registerUnclaimedStateAsExtension(stateBytes);
             memoOfId[memo.memoId] = memo;
             idsOfWriter[memo.writer].push(memo.memoId);
             idsOfContents[memo.contents].push(memo.memoId);
             uint balance = ERC20(tokenAddr).balanceOf(address(this));
-            requestTokenAsExtension(tokenAddr, tokenAmount);
+            core.requestTokenFromWallet(tokenAddr, tokenAmount);
             require(
                 ERC20(tokenAddr).balanceOf(address(this)) - balance ==
                     tokenAmount,

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "solidity-stringutils/src/strings.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import {DecimalUtils} from "@email-wallet/libraries/DecimalUtils.sol";
+import {DecimalUtils} from "@email-wallet/src/libraries/DecimalUtils.sol";
 
 library StringUtils {
     using strings for *;
@@ -34,7 +34,7 @@ library StringUtils {
         uint256[] memory ints = hex2Ints(hexStr);
         uint256 sum = 0;
         for (uint256 i = 0; i < 32; i++) {
-            sum = 256 * sum + ints[i];
+            sum = (256 * sum + ints[i]);
         }
         return bytes32(sum);
     }
@@ -54,9 +54,9 @@ library StringUtils {
 
     function hexChar2Int(bytes1 char) private pure returns (uint256) {
         uint8 charInt = uint8(char);
-        if (charInt >= 48 || charInt <= 57) {
+        if (charInt >= 48 && charInt <= 57) {
             return charInt - 48;
-        } else if (charInt >= 97 || charInt <= 102) {
+        } else if (charInt >= 97 && charInt <= 102) {
             return charInt - 87;
         } else {
             require(false, "invalid hex char");

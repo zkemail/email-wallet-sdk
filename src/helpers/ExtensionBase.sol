@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {Extension} from "@email-wallet/interfaces/Extension.sol";
-import {EmailWalletCore} from "@email-wallet/EmailWalletCore.sol";
-import {TokenRegistry} from "@email-wallet/utils/TokenRegistry.sol";
+import {Extension} from "@email-wallet/src/interfaces/Extension.sol";
+import {EmailWalletCore} from "@email-wallet/src/EmailWalletCore.sol";
+import {TokenRegistry} from "@email-wallet/src/utils/TokenRegistry.sol";
 import {ExtensionQuery} from "./ExtensionQuery.sol";
 import {StringUtils} from "./StringUtils.sol";
 
 abstract contract ExtensionBase is Extension, ExtensionQuery {
     EmailWalletCore public immutable core;
+    string public extensionName;
     string[][] public executionTemplates;
     uint public maxExecutionGas;
 
@@ -21,15 +22,18 @@ abstract contract ExtensionBase is Extension, ExtensionQuery {
         _;
     }
 
-    constructor(address coreAddr) {
+    constructor(address coreAddr) ExtensionQuery() {
         core = EmailWalletCore(payable(coreAddr));
+        extensionName = defineExtensionName();
         maxExecutionGas = defineMaxExecutionGas();
         string[] memory executionRawTemplates = defineExecutionTemplates();
+        executionTemplates = new string[][](executionRawTemplates.length);
         for (uint i = 0; i < executionRawTemplates.length; i++) {
             string[] memory splited = StringUtils.splitString(
                 executionRawTemplates[i],
                 " "
             );
+            executionTemplates[i] = new string[](splited.length);
             for (uint j = 0; j < splited.length; j++) {
                 executionTemplates[i][j] = splited[j];
             }
@@ -40,6 +44,12 @@ abstract contract ExtensionBase is Extension, ExtensionQuery {
         return executionTemplates;
     }
 
+    function defineExtensionName()
+        internal
+        pure
+        virtual
+        returns (string memory);
+
     function defineExecutionTemplates()
         internal
         pure
@@ -48,43 +58,5 @@ abstract contract ExtensionBase is Extension, ExtensionQuery {
 
     function defineMaxExecutionGas() internal pure virtual returns (uint) {
         return 0.01 ether;
-    }
-
-    function registerUnclaimedStateAsExtension(bytes memory state) internal {
-        core.registerUnclaimedStateAsExtension(address(this), state);
-    }
-
-    function registerUnclaimedStateAsExtension(
-        address extensionAddr,
-        bytes memory state
-    ) internal {
-        core.registerUnclaimedStateAsExtension(extensionAddr, state);
-    }
-
-    function executeAsExtension(address target, bytes calldata data) internal {
-        core.executeAsExtension(target, data);
-    }
-
-    function requestTokenAsExtension(
-        address tokenAddr,
-        uint256 amount
-    ) internal {
-        core.requestTokenAsExtension(tokenAddr, amount);
-    }
-
-    function getTokenAddressOfName(
-        string memory name
-    ) internal view returns (address) {
-        require(bytes(name).length > 0, "name must not be empty");
-        TokenRegistry tokenRegistry = core.tokenRegistry();
-        return tokenRegistry.getTokenAddress(name);
-    }
-
-    function getTokenNameOfAddress(
-        address tokenAddr
-    ) internal view returns (string memory) {
-        require(tokenAddr != address(0), "tokenAddr must not be zero");
-        TokenRegistry tokenRegistry = core.tokenRegistry();
-        return tokenRegistry.getTokenNameOfAddress(tokenAddr);
     }
 }
