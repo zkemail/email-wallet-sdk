@@ -24,6 +24,17 @@
     chalk "^2.4.2"
     js-tokens "^4.0.0"
 
+"@email-wallet/contracts@https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1":
+  version "1.0.0"
+  resolved "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1#f1719b426fa333b0c16d19e20225077abdcbfb58"
+  dependencies:
+    "@openzeppelin/contracts" "^4.9.2"
+    "@openzeppelin/contracts-upgradeable" "^4.9.2"
+    "@uniswap/v3-core" "https://github.com/Uniswap/v3-core#0.8"
+    "@uniswap/v3-periphery" "https://github.com/Uniswap/v3-periphery.git"
+    "@zk-email/contracts" "^3.2.0"
+    solady "^0.0.123"
+
 "@openzeppelin/contracts-upgradeable@^4.9.2":
   version "4.9.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
@@ -481,6 +492,10 @@ solhint@^3.6.1:
     text-table "^0.2.0"
   optionalDependencies:
     prettier "^2.8.3"
+
+"solidity-stringutils@https://github.com/Arachnid/solidity-stringutils.git":
+  version "0.0.0"
+  resolved "https://github.com/Arachnid/solidity-stringutils.git#4b2fcc43fa0426e19ce88b1f1ec16f5903a2e461"
 
 string-width@^4.2.3:
   version "4.2.3"

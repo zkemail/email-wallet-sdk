@@ -7,12 +7,14 @@
   "author": "SoraSuegami <suegamisora@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@email-wallet/contracts": "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1",
     "@openzeppelin/contracts": "^4.9.2",
     "@openzeppelin/contracts-upgradeable": "^4.9.2",
     "@uniswap/v3-core": "https://github.com/Uniswap/v3-core#0.8",
     "@uniswap/v3-periphery": "https://github.com/Uniswap/v3-periphery.git",
     "@zk-email/contracts": "^3.2.0",
-    "solady": "^0.0.123"
+    "solady": "^0.0.123",
+    "solidity-stringutils": "https://github.com/Arachnid/solidity-stringutils.git"
   },
   "devDependencies": {
     "ds-test": "https://github.com/dapphub/ds-test",
