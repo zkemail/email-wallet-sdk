@@ -1,0 +1,22 @@
+{
+  "name": "email-wallet-sdk",
+  "version": "0.0.1",
+  "description": "SDK for building Email Wallet extensions",
+  "main": "index.js",
+  "repository": "https://github.com/zkemail/email-wallet-sdk.git",
+  "author": "SoraSuegami <suegamisora@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
+    "@openzeppelin/contracts-upgradeable": "^4.9.2",
+    "@uniswap/v3-core": "https://github.com/Uniswap/v3-core#0.8",
+    "@uniswap/v3-periphery": "https://github.com/Uniswap/v3-periphery.git",
+    "@zk-email/contracts": "^3.2.0",
+    "solady": "^0.0.123"
+  },
+  "devDependencies": {
+    "ds-test": "https://github.com/dapphub/ds-test",
+    "forge-std": "https://github.com/foundry-rs/forge-std",
+    "solhint": "^3.6.1"
+  }
+}
