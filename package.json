@@ -7,7 +7,7 @@
   "author": "SoraSuegami <suegamisora@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@email-wallet/contracts": "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1",
+    "@email-wallet/contracts": "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?f9ac030a4b243cd6dda9909f9fe419b06ce88475",
     "@openzeppelin/contracts": "^4.9.2",
     "@openzeppelin/contracts-upgradeable": "^4.9.2",
     "@uniswap/v3-core": "https://github.com/Uniswap/v3-core#0.8",

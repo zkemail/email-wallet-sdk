@@ -24,9 +24,20 @@
     chalk "^2.4.2"
     js-tokens "^4.0.0"
 
-"@email-wallet/contracts@https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1":
+"@email-wallet/contracts@https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?40410d186b5e4b9469161cc55a3fa70ac480f156":
   version "1.0.0"
-  resolved "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?feat/v1#f1719b426fa333b0c16d19e20225077abdcbfb58"
+  resolved "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?40410d186b5e4b9469161cc55a3fa70ac480f156#0be7e0fd22ed594a7352cd6e3b26b7d6eedbad81"
+  dependencies:
+    "@openzeppelin/contracts" "^4.9.2"
+    "@openzeppelin/contracts-upgradeable" "^4.9.2"
+    "@uniswap/v3-core" "https://github.com/Uniswap/v3-core#0.8"
+    "@uniswap/v3-periphery" "https://github.com/Uniswap/v3-periphery.git"
+    "@zk-email/contracts" "^3.2.0"
+    solady "^0.0.123"
+
+"@email-wallet/contracts@https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?f9ac030a4b243cd6dda9909f9fe419b06ce88475":
+  version "1.0.0"
+  resolved "https://gitpkg.now.sh/zkemail/email-wallet/packages/contracts?f9ac030a4b243cd6dda9909f9fe419b06ce88475#129160f1bdc349b0c1cf4e8ff95f894afcc8398c"
   dependencies:
     "@openzeppelin/contracts" "^4.9.2"
     "@openzeppelin/contracts-upgradeable" "^4.9.2"

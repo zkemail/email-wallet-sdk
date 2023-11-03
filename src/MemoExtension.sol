@@ -6,7 +6,6 @@ import "@email-wallet/src/interfaces/Types.sol";
 import {ExtensionBase} from "./helpers/ExtensionBase.sol";
 import {StringUtils} from "./helpers/StringUtils.sol";
 import {EmailWalletHelper} from "./helpers/EmailWalletHelper.sol";
-import "forge-std/console.sol";
 
 contract MemoExtension is ExtensionBase {
     using StringUtils for *;
@@ -90,14 +89,11 @@ contract MemoExtension is ExtensionBase {
         UnclaimedState memory unclaimedState,
         bool isInternal
     ) public view override onlyEmailWallet {
-        require(
-            isInternal,
-            "registration from external address is not allowed"
-        );
+        require(isInternal, "only internal registration is allowed");
         State memory state = abi.decode(unclaimedState.state, (State));
         require(memoOfId[state.memoId].writer != address(0), "memo not found");
         require(
-            memoOfId[state.memoId].writer != unclaimedState.sender,
+            memoOfId[state.memoId].writer == unclaimedState.sender,
             "invalid sender"
         );
     }
@@ -264,6 +260,24 @@ contract MemoExtension is ExtensionBase {
         return memoOfId[memoId];
     }
 
+    function getMemoIdsOfWriter(
+        address writer
+    ) public view returns (bytes32[] memory) {
+        return idsOfWriter[writer];
+    }
+
+    function getMemoIdsOfContents(
+        string memory contents
+    ) public view returns (bytes32[] memory) {
+        return idsOfContents[contents];
+    }
+
+    function getMemoIdsOfRecipient(
+        address recipient
+    ) public view returns (bytes32[] memory) {
+        return idsOfRecipient[recipient];
+    }
+
     function executeTemplateZero(
         address wallet,
         bytes32 emailNullifier,
@@ -306,10 +320,10 @@ contract MemoExtension is ExtensionBase {
                 0,
                 false
             );
-            core.registerUnclaimedStateAsExtension(stateBytes);
             memoOfId[memo.memoId] = memo;
             idsOfWriter[memo.writer].push(memo.memoId);
             idsOfContents[memo.contents].push(memo.memoId);
+            core.registerUnclaimedStateAsExtension(stateBytes);
         } else {
             require(recipientETHAddr != address(0), "invalid recipientETHAddr");
             Memo memory memo = Memo(
