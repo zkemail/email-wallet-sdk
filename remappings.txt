@@ -6,3 +6,4 @@ ds-test/=node_modules/ds-test/src
 solady/=node_modules/solady/src/
 @email-wallet/=node_modules/@email-wallet/contracts
 solidity-stringutils/=node_modules/solidity-stringutils
+accountabstraction/=node_modules/accountabstraction/

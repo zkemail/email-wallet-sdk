@@ -58,7 +58,7 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         emailOp.extensionParams.subjectParams[0] = abi.encode(contents);
 
         vm.startPrank(relayer);
-        (bool success, bytes memory err, ) = core.handleEmailOp(emailOp);
+        (bool success, bytes memory err, , ) = core.handleEmailOp(emailOp);
         require(success, string(err));
         vm.stopPrank();
 
@@ -138,9 +138,10 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         vm.startPrank(relayer);
         vm.deal(relayer, unclaimedStateClaimGas * maxFeePerGas);
         daiToken.freeMint(walletAddr, 10 ether); // For fee reibursement
-        (bool success, bytes memory err, ) = core.handleEmailOp{
-            value: unclaimedStateClaimGas * maxFeePerGas
-        }(emailOp);
+        (bool success, bytes memory err, , uint256 registeredUnclaimId) = core
+            .handleEmailOp{value: unclaimedStateClaimGas * maxFeePerGas}(
+            emailOp
+        );
         require(success, string(err));
         vm.stopPrank();
 
@@ -177,7 +178,7 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
 
         vm.startPrank(relayer);
         unclaimsHandler.claimUnclaimedState(
-            recipientEmailAddrCommit,
+            registeredUnclaimId,
             emailAddrPointer,
             mockProof
         );
