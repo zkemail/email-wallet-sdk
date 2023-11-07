@@ -89,6 +89,6 @@ In some cases, your extension might need to manage state that is not immediately
 These functions should validate the state, update the necessary state variables, and perform any necessary actions (like transferring tokens).
 
 ## Step 5: Deploy and Register Your Extension
-
+Once your extension contract is ready, you can deploy it to the Ethereum network. After deployment, register your extension with the Email Wallet SDK by sending an email with the subject line "Install (extension name)".
 
 
