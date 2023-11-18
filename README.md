@@ -1,94 +1,121 @@
-# Email-Wallet SDK
-The Email Wallet SDK is a set of smart contracts designed to provide functionalities for an Ethereum-based application. The main feature of this SDK is the handling of commands, which are messages or notes associated with transactions or other operations within the system.
 
-## Main Components
+# Email Wallet Extensions Guide
 
-### ExtensionBase.sol
-This is a contract that provides structure for defining and managing extensions. Extensions are used to call other smart contracts and trigger specific actions.
+The Email Wallet SDK comprises smart contracts that enhance an email wallet's functionality. This SDK enables the creation of custom extensions that can interact with any DeFi protocol. It supports operations like token swapping via Uniswap, NFT minting from the email wallet, and more. Extensions also facilitate bulk sending, allowing users to dispatch varying amounts to multiple email addresses in a single email, subject to a 988-character limit in the email subject.
 
-### ExtensionQuery.sol
+## Setup
 
-This is an abstract contract that provides a structure for defining and managing query templates. These templates are used to parse the subject line of an email into a format understood by the smart contract.
+To create an extension using the Email Wallet SDK, follow these steps:
 
-THe `defineQueryTemplate` function is used to define the actual query templates and the query function is used to execute the query.
+1. **Create a new repository**: Start by creating a new repository using our template in the repo.
 
-### StringUtils.sol
-This library provides various utility functions for string manipulation.
+2. **Clone the repository**: Once the repository is created, clone it to your local machine.
 
-### MemoExtension.sol
-This is an example of an extension contract.
+3. **Install dependencies**: Navigate to the cloned folder and execute yarn to install the necessary dependencies.
 
-## Create your Own Extension with our Email-Wallet SDK
+## Modify MomoExtension.sol 
 
-### Installation
+After setting up the repository, the next step is to modify the `src/MemoExtension.sol` contract for your own implementation.
 
-To install our SDK run:
-```bash
-yarn add email-wallet-sdk
+1. **Rename the contract**: Rename the src/MemoExtension.sol to any name that suits your extension.
+
+2. **Create your own extension implementation**:
+
+MomoExtension.sol is an abstract contract for extensions. Each developer will need to implement actual functionality using the interface as a guide.
+
+These functions **MUST** be included in your contract.
+
+**`execute(uint8 templateIndex, bytes[] subjectParams, address wallet, bool hasEmailRecipient, address recipientETHAddr, bytes32 emailNullifier) external virtual`**
+
+- **Description**: Executes the extension logic based on specific parameters derived from the email subject.
+- **Parameters**:
+    - `templateIndex`: Index of the subject template to which the subject was matched.
+    - `subjectParams`: Array of parameters decoded from the email subject based on the template, in the same order as the matchers.
+    - `wallet`: Address of the user’s wallet.
+    - `hasEmailRecipient`: A flag indicating whether the email subject has an email address recipient.
+    - `recipientETHAddr`: The ETH address of the recipient in the email when `hasEmailRecipient` is `false`.
+    - `emailNullifier`: Nullifier of the email.
+- **Notes**:
+    - It is recommended to send tokens to the sender’s wallet by calling `EmailWalletCore.depositTokenToAccount` rather than directly calling `transfer` of the erc20 token. They have no different in our current spec, but it can be not true in the future spec.
+    - The `{tokenAmount}` parameter in the template should be decoded using `abi.decode(uint256, string)` to extract `tokenName` and `tokenAmount`.
+
+### `registerUnclaimedState(UnclaimedState memory unclaimedState, bool isInternal) public virtual`
+
+- **Description**: Registers an unclaimed state for a recipient email commitment.
+- **Parameters**:
+    - `unclaimedState`: Unclaimed state that is being registered.
+    - `isInternal`: A flag indicating whether the unclaimed state is registered from `registerUnclaimedStateAsExtension`.
+- **Default Implementation:** return a revert error.
+
+### `claimUnclaimedState(UnclaimedState memory unclaimedState, address wallet) external virtual`
+
+- **Description**: Claims an unclaimed state for a recipient user.
+- **Parameters**:
+    - `unclaimedState`: Unclaimed state that is being claimed.
+    - `wallet`: Address of the user’s wallet.
+- **Default Implementation:** return a revert error.
+
+### `voidUnclaimedState(UnclaimedState memory unclaimedState) external virtual`
+
+- **Description**: Reverts an expired unclaimed state.
+- **Parameters**:
+    - `unclaimedState`: Unclaimed state that has expired.
+- **Default Implementation:** return a revert error.
+
+3. **Define Subject Templates**:
+Subject templates are an array of string arrays, i.e., a two-dimensional string array. These are defined by an extension to declare the formats of the subject that will call the extension. Each format can use a fixed string (without spaces) and the following templates.
+
+- `"{tokenAmount}"`: a combination of the decimal string of the token amount and the string of the token name. The corresponding parameter in `subjectParams` is the bytes encoding `(uint256,string)`. The decimal size of the amount depends on the `decimals` value of the ERC20 contract of the token name. For example, “1.5 ETH” ⇒ `abi.encode((1.5 * (10**18), "ETH"))`, “3.4 USDC” ⇒ `abi.encode((3.4 * (10**6), "USDC"))`.
+- `"{amount}"`: a decimal string. The corresponding parameter in `subjectParams` is the bytes encoding `uint256`. The decimal size of the amount is fixed to 18. For example, “2.7” ⇒ `abi.encode(2.7 * (10**18))`.
+- `"{string}"`: a string. The corresponding parameter in `subjectParams` is the bytes encoding `string`.
+- `"{uint}"`: a decimal string of the unsigned integer. The corresponding parameter in `subjectParams` is the bytes encoding `uint256`.
+- `"{int}"`: a decimal string of the signed integer. The corresponding parameter in `subjectParams` is the bytes encoding `int256`.
+- `"{address}"`: a hex string of the Ethereum address. The corresponding parameter in `subjectParams` is the bytes encoding `address`.
+- `"{recipient}"`: either the recipient’s email address or a hex string of the recipient’s Ethereum address. The corresponding parameter in `subjectParams` is the bytes encoding either `uint256` of the byte size of the email address or `address` of the Ethereum address.
+
+4. **Compile the Contract**: Compile the contract by running:
 ```
-### Step 1: Inherit the ExtensionBase Contract
-Your extension contract should inherit from the ExtensionBase
-```js
-import {ExtensionBase} from "./helpers/ExtensionBase.sol";
-
-contract MyExtension is ExtensionBase {
-    // Your extension code goes here
-}
-```
-### Step 2: Define Execution Templates
-Execution templates structure the email subject input to activate your extension. They are used to parse the subject line of an email into a format thats understandable by a smart contract.
-
-```js
-function defineExecutionTemplates()
-    internal
-    pure
-    override
-    returns (string[] memory)
-{
-    // Define your execution templates here
-}
-```
-When defining your own execution template, you should follow this format:
-
-1. **Command**: This is the first word in the template and it represents the action to be performed. Examples of command words could be swap, send, transfer, withdraw, or anything you want it to be.
-
-2. **Placeholders**: Enclosed in curly braces {} these represent the dynamic parts of the subject line. The placeholder should describe the type of input thats expected. For example, {string} is used for a string input, {recipient} is used for the recipients address, and {tokenAmount} for the amount of tokens to be transferred. 
-
-Here are some examples of execution templates:
-- Transfer {tokenAmount} to {recipient}
-- Vote {proposalId}
-- Swap from {tokenAddr} to {tokenAddr}
-
-### Step 3: Implement the execute function
-The execute function implements the logic for executing a template based on the provided templateIndex and subject parameters.
-```js
- function execute(
-        uint8 templateIndex,
-        bytes[] memory subjectParams,
-        address wallet,
-        bool hasEmailRecipient,
-        address recipientETHAddr,
-        bytes32 emailNullifier
-    ) {
-        // Insert execution logic here
-    }
+$ forge build
 ```
 
-Here's a general breakdown of the function:
+## Modify the Test Codes
+After modifying the extension contract, the next step is to modify the test codes.
 
-- **templateIndex**: This is the index of the execution template that matches the format of the email subject line.
-- **subjectParams**: This is an array of bytes that represents the parsed subject line of the email. Each element corresponds to a placeholder in the execution template.
-- **wallet**: This is the address of the wallet that is executing the action.
-- **hasEmailRecipient**: This is a boolean indicating whether the email has a recipient.
-- **recipientETHAddr**: If hasEmailRecipient is true, this is the Ethereum address of the email recipient.
-- **emailNullifier**: This is a unique identifier for the email to prevent double-spending.
+1. Rename the test file: Rename the test/MemoExtension.t.sol to any name that suits your extension.
 
-## Step 4: Implement State Management Functions
-In some cases, your extension might need to manage state that is not immediately claimed or that can be voided. For this, you can implement functions like registerUnclaimedState, claimUnclaimedState, and voidUnclaimedState.
+2. Modify the test codes: Update the test codes to test the functionality of your extension.
 
-These functions should validate the state, update the necessary state variables, and perform any necessary actions (like transferring tokens).
+3. Run the tests: You can run the tests by running 
+```
+$ forge test
+```
+## Publish the Extension
 
-## Step 5: Deploy and Register Your Extension
-Once your extension contract is ready, you can deploy it to the Ethereum network. After deployment, register your extension with the Email Wallet SDK by sending an email with the subject line "Install (extension name)".
+### `publishExtension(string calldata name, address addr, string[][] memory subjectTemplates, uint256 maxExecutionGas) public`
 
+- **Description**: Publishes an extension with the provided name, address, subject templates, and maximum execution gas.
+- **Parameters**:
+    - `name`: Name of the extension.
+    - `addr`: Address of the extension.
+    - `subjectTemplates`: Subject templates for the extension.
+    - `maxExecutionGas`: Maximum gas that can be used for execution.
+- **Implementation**:
+    - Check that extension name is already not in use by using this addressOfExtensionName[name] == address(0)
+    - Assert that `addr` is not the zero address.
+    - Assert that `name` is not empty.
+    - Assert that `maxExecutionGas` is greater than zero.
+    - Assert that the `subjectTemplates` array is not empty and contains at least one template.
+    - Verifies that the extension of `addr` has not been published.
+    - Iterates through the `subjectTemplates` array to perform various checks and validations.
+    - Maps the `name` to the provided `addr` in the `addressOfExtensionName` mapping.
+    - Sets the `subjectTemplates` and `maxGas` for `addr` in the `subjectTemplatesOfExtension` and `maxGasOfExtension` mappings, respectively.
+    - Emits an event to indicate the successful publication of the extension.
+
+To publish your extension, run the following command:
+
+```
+    PRIVATE_KEY=0x... EMAIL_WALLET_CORE=0x7A07f282Ebdc033da00EC46D602eCE742825C6dB forge script script/Deploy.s.sol --rpc-url https://arb1.arbitrum.io/rpc --chain-id 42161 --broadcast
+```
+
+Note: PRIVATE_KEY is the hex string of the private key used for the deployment.
 
