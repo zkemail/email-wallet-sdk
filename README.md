@@ -1,7 +1,7 @@
 
 # Email Wallet Extensions Guide
 
-The Email Wallet SDK comprises smart contracts that enhance an email wallet's functionality. This SDK enables the creation of custom extensions that can interact with any DeFi protocol. It supports operations like token swapping via Uniswap, NFT minting from the email wallet, and more. Extensions also facilitate bulk sending, allowing users to dispatch varying amounts to multiple email addresses in a single email, subject to a 988-character limit in the email subject.
+The Email Wallet SDK comprises smart contracts that enhance an email wallet's functionality. This SDK enables the creation of custom extensions that can interact with any smart contracts. It supports operations like token swapping via Uniswap, NFT transfer from the email wallet, and more. Third-party developers can build new functionality of email wallet using our SDK for extensions.
 
 ## Setup
 
@@ -21,7 +21,7 @@ After setting up the repository, the next step is to modify the `src/MemoExtensi
 
 2. **Create your own extension implementation**:
 
-MomoExtension.sol is an abstract contract for extensions. Each developer will need to implement actual functionality using the interface as a guide.
+MomoExtension.sol is an example of the extension implementation. Each developer will need to implement actual functionality using the interface as a guide.
 
 These functions **MUST** be included in your contract.
 
@@ -90,32 +90,12 @@ After modifying the extension contract, the next step is to modify the test code
 $ forge test
 ```
 ## Publish the Extension
-
-### `publishExtension(string calldata name, address addr, string[][] memory subjectTemplates, uint256 maxExecutionGas) public`
-
-- **Description**: Publishes an extension with the provided name, address, subject templates, and maximum execution gas.
-- **Parameters**:
-    - `name`: Name of the extension.
-    - `addr`: Address of the extension.
-    - `subjectTemplates`: Subject templates for the extension.
-    - `maxExecutionGas`: Maximum gas that can be used for execution.
-- **Implementation**:
-    - Check that extension name is already not in use by using this addressOfExtensionName[name] == address(0)
-    - Assert that `addr` is not the zero address.
-    - Assert that `name` is not empty.
-    - Assert that `maxExecutionGas` is greater than zero.
-    - Assert that the `subjectTemplates` array is not empty and contains at least one template.
-    - Verifies that the extension of `addr` has not been published.
-    - Iterates through the `subjectTemplates` array to perform various checks and validations.
-    - Maps the `name` to the provided `addr` in the `addressOfExtensionName` mapping.
-    - Sets the `subjectTemplates` and `maxGas` for `addr` in the `subjectTemplatesOfExtension` and `maxGasOfExtension` mappings, respectively.
-    - Emits an event to indicate the successful publication of the extension.
-
-To publish your extension, run the following command:
+To publish your extension to our email wallet core contract, run the following command:
 
 ```
     PRIVATE_KEY=0x... EMAIL_WALLET_CORE=0x7A07f282Ebdc033da00EC46D602eCE742825C6dB forge script script/Deploy.s.sol --rpc-url https://arb1.arbitrum.io/rpc --chain-id 42161 --broadcast
 ```
 
 Note: PRIVATE_KEY is the hex string of the private key used for the deployment.
+
 

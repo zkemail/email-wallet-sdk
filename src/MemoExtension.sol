@@ -373,7 +373,6 @@ contract MemoExtension is ExtensionBase {
                 tokenAmount,
                 false
             );
-            core.registerUnclaimedStateAsExtension(stateBytes);
             memoOfId[memo.memoId] = memo;
             idsOfWriter[memo.writer].push(memo.memoId);
             idsOfContents[memo.contents].push(memo.memoId);
@@ -384,6 +383,7 @@ contract MemoExtension is ExtensionBase {
                     tokenAmount,
                 "token transfer failed"
             );
+            core.registerUnclaimedStateAsExtension(stateBytes);
         } else {
             require(recipientETHAddr != address(0), "invalid recipientETHAddr");
             Memo memory memo = Memo(
