@@ -17,7 +17,7 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
     function setUp() public override {
         super.setUp();
         _registerRelayer();
-        _registerAndInitializeAccount();
+        _createTestAccount();
 
         address extensionDev = vm.addr(3);
         vm.startPrank(extensionDev);
@@ -34,11 +34,11 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         EmailOp memory emailOp = _getBaseEmailOp();
         emailOp.command = Commands.INSTALL_EXTENSION;
         emailOp.extensionName = memoExtension.extensionName();
-        emailOp.maskedSubject = string.concat(
+        emailOp.emailProof.maskedSubject = string.concat(
             "Install extension ",
             memoExtension.extensionName()
         );
-        emailOp.emailNullifier = bytes32(uint256(93845));
+        emailOp.emailProof.emailNullifier = bytes32(uint256(93845));
 
         vm.startPrank(relayer);
         core.handleEmailOp(emailOp);
@@ -51,8 +51,8 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
 
         EmailOp memory emailOp = _getBaseEmailOp();
         emailOp.command = "Memo";
-        emailOp.maskedSubject = subject;
-        emailOp.emailNullifier = bytes32(uint256(23914));
+        emailOp.emailProof.maskedSubject = subject;
+        emailOp.emailProof.emailNullifier = bytes32(uint256(23914));
         emailOp.extensionParams.subjectTemplateIndex = 0;
         emailOp.extensionParams.subjectParams = new bytes[](1);
         emailOp.extensionParams.subjectParams[0] = abi.encode(contents);
@@ -65,12 +65,12 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         bytes32 memoId = memoExtension.idsOfWriter(walletAddr, 0);
         assertEq(
             memoId,
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "memoIds[0] should be emailNullifier"
         );
         assertEq(
             memoExtension.idsOfContents(contents, 0),
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "idsOfContents[memo] should be emailNullifier"
         );
         MemoExtension.Memo memory memo = memoExtension.getMemoOfId(memoId);
@@ -126,13 +126,13 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
 
         EmailOp memory emailOp = _getBaseEmailOp();
         emailOp.command = "Memo";
-        emailOp.maskedSubject = subject;
-        emailOp.emailNullifier = bytes32(uint256(2391424));
+        emailOp.emailProof.maskedSubject = subject;
+        emailOp.emailProof.emailNullifier = bytes32(uint256(2391424));
         emailOp.extensionParams.subjectTemplateIndex = 1;
         emailOp.extensionParams.subjectParams = new bytes[](1);
         emailOp.extensionParams.subjectParams[0] = abi.encode(contents);
-        emailOp.hasEmailRecipient = true;
-        emailOp.recipientEmailAddrCommit = recipientEmailAddrCommit;
+        emailOp.emailProof.hasEmailRecipient = true;
+        emailOp.emailProof.recipientEmailAddrCommit = recipientEmailAddrCommit;
         emailOp.feeTokenName = "DAI";
 
         vm.startPrank(relayer);
@@ -148,16 +148,16 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         bytes32 memoId = memoExtension.idsOfWriter(walletAddr, 0);
         assertEq(
             memoId,
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "memoId should be emailNullifier"
         );
         assertEq(
             memoExtension.idsOfContents(contents, 0),
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "idsOfContents[memo] should be emailNullifier"
         );
         MemoExtension.Memo memory memo = memoExtension.getMemoOfId(
-            emailOp.emailNullifier
+            emailOp.emailProof.emailNullifier
         );
         assertEq(memo.writer, walletAddr, "memo.writer should be walletAddr");
         assertEq(memo.contents, contents, "memo.content should be memo");
@@ -179,12 +179,12 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         vm.startPrank(relayer);
         unclaimsHandler.claimUnclaimedState(
             registeredUnclaimId,
-            emailAddrPointer,
+            accountSalt,
             mockProof
         );
         vm.stopPrank();
 
-        memo = memoExtension.getMemoOfId(emailOp.emailNullifier);
+        memo = memoExtension.getMemoOfId(emailOp.emailProof.emailNullifier);
         assertEq(memo.recipient, walletAddr, "memo.recipient should be zero");
         assertEq(memo.isReceived, true, "memo.isReceived should be true");
     }
@@ -200,8 +200,8 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
 
         EmailOp memory emailOp = _getBaseEmailOp();
         emailOp.command = "Memo";
-        emailOp.maskedSubject = subject;
-        emailOp.emailNullifier = bytes32(uint256(2391424));
+        emailOp.emailProof.maskedSubject = subject;
+        emailOp.emailProof.emailNullifier = bytes32(uint256(2391424));
         emailOp.extensionParams.subjectTemplateIndex = 2;
         emailOp.extensionParams.subjectParams = new bytes[](2);
         emailOp.extensionParams.subjectParams[0] = abi.encode(contents);
@@ -209,8 +209,8 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
             1.23 ether,
             "DAI"
         );
-        emailOp.hasEmailRecipient = true;
-        emailOp.recipientEmailAddrCommit = recipientEmailAddrCommit;
+        emailOp.emailProof.hasEmailRecipient = true;
+        emailOp.emailProof.recipientEmailAddrCommit = recipientEmailAddrCommit;
         emailOp.feeTokenName = "DAI";
 
         vm.startPrank(relayer);
@@ -226,16 +226,16 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         bytes32 memoId = memoExtension.idsOfWriter(walletAddr, 0);
         assertEq(
             memoId,
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "memoId should be emailNullifier"
         );
         assertEq(
             memoExtension.idsOfContents(contents, 0),
-            emailOp.emailNullifier,
+            emailOp.emailProof.emailNullifier,
             "idsOfContents[memo] should be emailNullifier"
         );
         MemoExtension.Memo memory memo = memoExtension.getMemoOfId(
-            emailOp.emailNullifier
+            emailOp.emailProof.emailNullifier
         );
         assertEq(memo.writer, walletAddr, "memo.writer should be walletAddr");
         assertEq(memo.contents, contents, "memo.content should be memo");
@@ -265,12 +265,12 @@ contract MemoExtensionTest is EmailWalletCoreTestHelper {
         vm.startPrank(relayer);
         unclaimsHandler.claimUnclaimedState(
             registeredUnclaimId,
-            emailAddrPointer,
+            accountSalt,
             mockProof
         );
         vm.stopPrank();
 
-        memo = memoExtension.getMemoOfId(emailOp.emailNullifier);
+        memo = memoExtension.getMemoOfId(emailOp.emailProof.emailNullifier);
         assertEq(memo.recipient, walletAddr, "memo.recipient should be zero");
         assertEq(memo.isReceived, true, "memo.isReceived should be true");
     }
